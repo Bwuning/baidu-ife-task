@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+    <meta charset="utf-8">
+    <title>IFE JavaScript Task 01</title>
+    <script type="text/javascript" src="velocity.min.js"></script>
+    <style>
+        .chartdiv{
+            visibility: visible;
+            top:900px;
+            transform: translateY(-100%);
+            float: left;
+            box-sizing: border-box;
+            display: inline-block;
+            background-color: aqua;
+            transition: all 0.3s;
+
+
+             ;
+        }
+        span{
+            display: inline-block;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 10px;
+            line-height: 20px;
+
+        }
+        body{
+            position: relative;
+        }
+        #chart{
+            height: 1px;
+            /*visibility: hidden;*/
+            margin-top: 600px;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #161816;
+            display: inline-block;
+        }
+        input{
+            display: none;
+        }
+        label
+    </style>
+    <script>
+        //监听事件兼容
+        var EventUtil ={
+            addHandler:function(element,type,handler){
+                if(!!element.addEventListener){
+                    element.addEventListener(type,handler,false);
+                }else if (!!element.attachEvent) {
+                    element.attachEvent("on"+type,handler);
+                }else {
+                    element["on"+type] = handler;
+                }
+            },
+            removeHandler:function(element,type,handle){
+                if(element.removeEventListener){
+                    element.removeEventListener(type,handle,false);
+                }else if (element.detachEvent){
+                    element.detachEvent("on"+type,handle);
+                }else {
+                    element["on"+type]=null;
+                }
+            }
+        };
+        //删除空白收尾字符
+        function trim(str)
+        {
+            return str.replace(/(^\s*)|(\s*$)/g, "");
+        }
+    </script>
+</head>
+<body>
+<form id="cityform">
+    <fieldset id="form-gra-time">
+        <legend>请选择日期粒度：</legend>
+        <label>日<input name="gra-time" value="day" type="radio" checked="checked"></label>
+        <label>周<input name="gra-time" value="week" type="radio"></label>
+        <label>月<input name="gra-time" value="month" type="radio"></label>
+    </fieldset>
+
+    <fieldset>
+        <legend>请选择查看的城市：</legend>
+        <select id="city-select">
+            <option value= -1 >--</option>
+        </select>
+    </fieldset>
+</form>
+<div id="chart" class="aqi-chart-wrap">
+</div>
+<script>
+    /* 数据格式演示
+     var aqiSourceData = {
+     "北京": {
+     "2016-01-01": 10,
+     "2016-01-02": 10,
+     "2016-01-03": 10,
+     "2016-01-04": 10
+     }
+     };
+     */
+
+    // 以下两个函数用于随机模拟生成测试数据
+    function getDateStr(dat) {
+        var y = dat.getFullYear();
+        var m = dat.getMonth() + 1;
+        m = m < 10 ? '0' + m : m;
+        var d = dat.getDate();
+        d = d < 10 ? '0' + d : d;
+        return y + '-' + m + '-' + d;
+    }
+    function randomBuildData(seed) {
+        var returnData = {};
+        var dat = new Date("2016-01-01");
+        var datStr = '';
+        for (var i = 1; i < 92; i++) {
+            datStr = getDateStr(dat);
+            returnData[datStr] = Math.ceil(Math.random() * seed);
+            dat.setDate(dat.getDate() + 1);
+        }
+        return returnData;
+    }
+
+    var aqiSourceData = {
+        "北京": randomBuildData(500),
+        "上海": randomBuildData(500),
+        "广州": randomBuildData(500),
+        "深圳": randomBuildData(500),
+        "成都": randomBuildData(500),
+        "西安": randomBuildData(500),
+        "福州": randomBuildData(500),
+        "厦门": randomBuildData(500),
+        "沈阳": randomBuildData(500)
+    };
+    //获得节点
+    function getDom(){
+        citySelect = document.getElementById("city-select");
+        chart = document.getElementById("chart");
+        from =document.getElementById("cityform");
+        times = document.getElementsByTagName("input");
+        chartDiv = document.getElementsByClassName("chartdiv");
+        chart = document.getElementById("chart");
+    }
+    getDom();
+
+    //初始化城市选择框
+    function initCityList(listObject){
+        for(var i =citySelect.length-1;i>0;i--){
+            citySelect.remove(i);
+        }
+        for(city in  listObject){
+            var option = new Option(city,city);
+            citySelect.add(option);
+        }
+    }
+    initCityList(aqiSourceData);
+
+
+
+    // 用于渲染图表的数据
+    var chartData = {};
+
+    // 记录当前页面的表单选项
+    var pageState = {
+        nowSelectCity: -1,
+        nowGraTime: "day"
+    };
+
+    /**
+     * 渲染图表
+     */
+    //生成无数据图表
+    function createChartDiv(type){
+        //初始化图表
+        var childs = chart.childNodes;
+        for(var count = childs.length - 1; count >= 0; count--) {
+            chart.removeChild(childs[count]);
+        }
+        //生成空白
+        if (type=="day"){
+            for(var i = 0 ;i < 91 ; i++){
+                var div = document.createElement("div");
+                div.setAttribute("class","chartdiv");
+                div.innerHTML ="<span>"+ "" +"</span>";
+                div.style.cssText="width: 6px;"+ "margin-right:2px;"+"margin-left:2px;";
+                div.style.height="1px";
+                div.style.paddingTop="1px";
+                chart.appendChild(div);
+            }
+        }else if(type=="week"){
+            for(var i = 0 ;i < 13 ; i++){
+                var div = document.createElement("div");
+                div.setAttribute("class","chartdiv");
+                div.innerHTML ="<span>第"+ (i+1) +"周</span>";
+                div.style.cssText="width: 36px;"+ "margin-right:17px;"+"margin-left:17px;";
+                div.style.height="1px";
+                div.style.paddingTop="1px";
+                chart.appendChild(div);
+            }
+        }else if(type=="month"){
+            for(var i = 0 ;i < 3 ; i++){
+                var div = document.createElement("div");
+                div.setAttribute("class","chartdiv");
+                div.innerHTML ="<span>第"+ (i+1) +"月</span>";
+                div.style.cssText="width: 153px;"+ "margin-right:75px;"+"margin-left:75px;";
+                div.style.height="1px";
+                div.style.paddingTop="1px";
+                chart.appendChild(div);
+            }
+        }
+    }
+    //设置小Div高度
+    function changeDivHeight(div,eight){
+        Velocity(div,{height :eight+"px",paddingTop : eight+"px"},"ease-out");
+//        div.style.height= eight+"px";
+//        div.style.paddingTop= eight+"px";
+    }
+
+    function createDiv(target,height,width,innertext){
+        var div = document.createElement("div");
+        div.setAttribute("class","chartdiv");
+        div.innerHTML ="<span>"+ innertext +"</span>";
+        div.style.cssText="width: "+width/2+"px;"+ "margin-right:"+width/4+"px;"+"margin-left:"+width/4+"px;";
+        div.style.height="1px";
+        div.style.paddingTop="1px";
+        target.appendChild(div);
+        div.style.height=height+"px";
+        div.style.paddingTop=(parseInt(height)+60)+"px";
+
+    }
+
+
+
+    function renderChart(pageObj) {
+        var date = new Date("2016-01-01");
+        createChartDiv(pageObj.nowGraTime);
+
+        if(pageObj.nowGraTime=="day"){
+            var i = 0;
+            while (i < 91){
+                var dateStr = getDateStr(date);
+                var divHeight = (aqiSourceData[pageObj.nowSelectCity])[dateStr];
+                changeDivHeight(chartDiv[i],divHeight);
+                date.setDate(date.getDate() + 1);
+                i++;
+            }
+        }else if(pageObj.nowGraTime=="week"){
+            var divHeightweek = 0;
+            var j = 1;
+            var l = 0;
+            while (j < 92){
+                var dateStrweek = getDateStr(date);
+                if((j+1)%7==0){
+                    divHeightweek = divHeightweek + (aqiSourceData[pageObj.nowSelectCity])[dateStrweek];
+                    changeDivHeight(chartDiv[l],((divHeightweek)/5));
+                    l++;
+                    divHeightweek = 0;
+                }else {
+                    divHeightweek = divHeightweek + (aqiSourceData[pageObj.nowSelectCity])[dateStrweek];
+                }
+                date.setDate(date.getDate() + 1);
+                j++;}
+//            alert(pageObj.nowGraTime);
+        }else if(pageObj.nowGraTime=="month"){
+            var divHeightmonth = 0 ;
+            var divWeightmonth = 0 ;
+            var k = 1;
+            var month = 0;
+            while (k < 92){
+                divWeightmonth = divWeightmonth + 10;
+                var dateStrmonth = getDateStr(date);
+                date.setDate(date.getDate() + 1);
+                divHeightmonth = divHeightmonth + (aqiSourceData[pageObj.nowSelectCity])[dateStrmonth];
+                if(date.getMonth()==month){
+                }else {
+                    changeDivHeight(chartDiv[(parseInt(date.getMonth())-1)],((divHeightmonth)/20));
+                    divHeightmonth = 0;
+                    divWeightmonth = 0;
+                    month = date.getMonth()
+                }
+                k++;
+            }
+
+    }
+    }
+
+    /**
+     * 日、周、月的radio事件点击时的处理函数
+     */
+
+    function returnGraTime(){
+        var ret = ''
+        for(var i =0 ;i<from.elements["gra-time"].length;i++){            
+            if(from.elements["gra-time"][i].checked){
+               ret = from.elements["gra-time"][i].value
+            }
+        }
+        return ret
+    }
+
+    function graTimeChange() {
+        for (var i = 0 ;i<times.length;i++){
+            EventUtil.addHandler(times[i],"click",function(){
+                console.log(returnGraTime())
+                pageState.nowGraTime= returnGraTime();
+                renderChart(pageState);
+            })
+        }
+
+
+        // 确定是否选项发生了变化
+
+        // 设置对应数据
+
+        // 调用图表渲染函数
+    }
+    graTimeChange();
+    /**
+     * select发生变化时的处理函数
+     */
+    function citySelectChange() {
+        var citySelect = document.getElementById("city-select");
+        function SelectChange(){
+            pageState.nowSelectCity = citySelect.value;
+            renderChart(pageState);
+        }
+        // 确定是否选项发生了变化
+        EventUtil.addHandler(citySelect,"change",SelectChange);
+        // 设置对应数据
+        // 调用图表渲染函数
+
+    }
+    citySelectChange();
+
+
+
+
+
+    /**
+     * 初始化日、周、月的radio事件，当点击时，调用函数graTimeChange
+     */
+    function initGraTimeForm() {
+
+    }
+
+    /**
+     * 初始化城市Select下拉选择框中的选项
+     */
+    function initCitySelector() {
+        // 读取aqiSourceData中的城市，然后设置id为city-select的下拉列表中的选项
+
+        // 给select设置事件，当选项发生变化时调用函数citySelectChange
+
+    }
+
+    /**
+     * 初始化图表需要的数据格式
+     */
+    function initAqiChartData() {
+        // 将原始的源数据处理成图表需要的数据格式
+        // 处理好的数据存到 chartData 中
+    }
+
+    /**
+     * 初始化函数
+     */
+    function init() {
+        initGraTimeForm();
+        initCitySelector();
+        initAqiChartData();
+    }
+
+    init();
+</script>
+</body>
+</html>

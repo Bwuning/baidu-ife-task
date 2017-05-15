@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        input::-webkit-input-placeholder { /* WebKit browsers */
+            font-size: 20px;
+        }
+        input:-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+            font-size: 20px;
+        }
+        input::-moz-placeholder { /* Mozilla Firefox 19+ */
+            font-size: 20px;
+        }
+        input:-ms-input-placeholder { /* Internet Explorer 10+ */
+            font-size: 20px;
+        }
+        input:focus{
+            outline:none;
+            box-shadow:0 45px 40px -50px #707070,
+            0 20px 50px #979797;
+        }
+        input{
+            margin: 0 4px 30px 4px;
+            font-size: 32px;
+            width: 300px;
+            height: 100px;
+            box-shadow:0 25px 15px -50px #707070,
+            0 10px 20px #979797;
+            display: inline-block;
+            text-align: center;
+            border: 0;
+            transition: all,0.3s;
+        }
+        .button:hover{
+            background-color: deepskyblue;
+            color: white;
+        }
+        .button{
+            /*box-shadow:0 25px 15px -50px #707070,*/
+            /*0 10px 20px #979797;*/
+            display: inline-block;
+            line-height: 40px;
+            font-size: 12px;
+            text-align: center;
+
+            width: 142px;
+            height: 40px;
+            margin: 4px;
+            background-color: white;
+            transition: all,0.3s;
+
+        }
+        .bluebutton{
+            color: deepskyblue;
+            border: 1px solid deepskyblue;
+        }
+        .bigbutton:hover{
+            background-color: lightpink;
+            color: white;
+        }
+        .bigbutton{
+            display: inline-block;
+            text-align: center;
+            line-height: 40px;
+            font-size: 12px;
+            width: 300px;
+            height: 40px;
+            margin: 4px;
+            transition: all,0.3s;
+
+        }
+       .redbutton{
+           color: lightpink;
+           border: 1px solid lightpink;
+           background-color: white;
+       }
+        .sortbutton{
+            display: inline-block;
+            text-align: center;
+            line-height: 40px;
+            font-size: 12px;
+            color: white;
+            width: 300px;
+            height: 40px;
+            margin: 4px;
+            background-color: lightpink;
+            transition: all,0.3s;
+            border: 1px solid lightpink;
+        }
+        form{
+            display: inline-block;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        body{
+            top: 40px;
+            position: relative;
+        }
+        #chart{
+            margin-top: 550px;
+            height: 1px;
+            background-color: #2d0000;
+            display: inline-block;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        .singlediv{
+            float: left;
+            width: 12px;
+            margin: 0 4px;
+            background-color: cyan;
+            transform: translateY(-100%);
+            transition: height 0.4s ease-out;
+        }
+    </style>
+    <script>
+        //监听事件兼容
+        var EventUtil ={
+            addHandler:function(element,type,handler){
+                if(!!element.addEventListener){
+                    element.addEventListener(type,handler,false);
+                }else if (!!element.attachEvent) {
+                    element.attachEvent("on"+type,handler);
+                }else {
+                    element["on"+type] = handler;
+                }
+            },
+            removeHandler:function(element,type,handle){
+                if(element.removeEventListener){
+                    element.removeEventListener(type,handle,false);
+                }else if (element.detachEvent){
+                    element.detachEvent("on"+type,handle);
+                }else {
+                    element["on"+type]=null;
+                }
+            }
+        };
+        //删除空白收尾字符
+        function trim(str)
+        {
+            return str.replace(/(^\s*)|(\s*$)/g, "");
+        }
+    </script>
+</head>
+<body>
+<form>
+    <input id="getNum" type="text" name="text" placeholder="请输入10~100内数字" />
+    <div>
+        <div class="button bluebutton" id="leftIn">左侧入</div>
+        <div class="button bluebutton" id="rightIn">右侧入</div>
+    </div>
+    <div>
+        <div class="button bluebutton" id="leftOut">左侧出</div>
+        <div class="button bluebutton" id="rightOut">右侧出</div>
+    </div>
+    <div>
+        <div class="bigbutton redbutton" id="createRandom">随机生成</div>
+    </div>
+    <div>
+        <div class="bigbutton redbutton" id="sort">进行排序</div>
+    </div>
+</form><br/>
+<div id="chart">
+
+</div>
+<script>
+
+    //获取页面元素
+    function getViewElement(){
+        INPUT = document.getElementById("getNum") ;
+        CHART = document.getElementById("chart");
+        BTN_createradom=document.getElementById("createRandom");
+        BTN_leftin =document.getElementById("leftIn");
+        BTN_leftout =document.getElementById("leftOut");
+        BTN_rightin =document.getElementById("rightIn");
+        BTN_rightout =document.getElementById("rightOut");
+        BTN_sort =document.getElementById("sort");
+        DIVS = document.getElementsByClassName("singlediv");
+
+    }
+    getViewElement();
+
+    //用于渲染图表的数据
+    function createDate(){
+        numData = [];
+    }
+
+    //用于初始化图表
+    function clearchart(){
+        var childs = CHART.childNodes;
+        for(var count = childs.length - 1; count >= 0; count--) {
+            chart.removeChild(childs[count]);
+        }
+    }
+    //用于添加单个DIV
+    function addDiv(height){
+        var singleDiv = document.createElement("div");
+        singleDiv.setAttribute("class","singlediv");
+        singleDiv.style.height="1px";
+        chart.appendChild(singleDiv);
+        setTimeout(function(){singleDiv.style.height=height+"px";},100);
+    }
+    //随机生成数据
+    function randomCreate(){
+            numData = [];
+            clearchart();
+        for(var i =0 ;i<50;i++){
+            var data = Math.floor(Math.random()*90+10);
+            numData.push(data);
+            addDiv(data*5);
+        }
+        return false
+    }
+
+    //交换数据
+    function exchange(m,n){
+        var temp = 0;
+        temp = numData[m];
+        numData[m]=numData[n];
+        numData[n]=temp;
+
+        DIVS[m].style.height=numData[m]*5+"px";
+        DIVS[n].style.height=numData[n]*5+"px";
+    }
+
+    function changecolor(m,n){
+        for(var i =0 ;i<DIVS.length;i++){
+            DIVS[i].style.backgroundColor="cyan";
+        }
+        for(var j=0;j<arguments.length;j++){
+            if(arguments[j]||(arguments[j]==0)){
+
+                DIVS[arguments[j]].style.backgroundColor="#979797";
+            }
+
+        }
+
+    }
+
+    //排序按钮变化
+    function btnsetting_whensorting(){
+        BTN_sort.removeEventListener("click",sort);
+        EventUtil.addHandler(BTN_sort,"click",antisort);
+        BTN_sort.setAttribute("class","sortbutton");
+        BTN_sort.innerText="终止排序";
+    }
+    function btnsetting_whensortisdone(){
+        BTN_sort.removeEventListener("click",antisort);
+        EventUtil.addHandler(BTN_sort,"click",sort);
+        BTN_sort.setAttribute("class","bigbutton  redbutton");
+        BTN_sort.innerText="进行排序";
+    }
+
+
+    //排序算法
+    function sort(){
+
+        function sortnumber(){
+            var maxdata = 0,maxnumber = 0;
+                for (var j= i;j<numData.length;j++){
+                    if(numData[j]>maxdata){
+                        maxdata = numData[j];
+                        maxnumber = j ;
+                    }
+                }
+                changecolor(i,maxnumber);
+                if(i!=maxnumber){
+                    exchange(i,maxnumber);
+                }
+                i++;
+            if(i>=numData.length){
+                changecolor();
+                btnsetting_whensortisdone();
+                return true;
+            }else {
+                movement = setTimeout(sortnumber,500);
+            }
+        }
+        if(numData){
+            var i=0;
+            btnsetting_whensorting();
+            sortnumber();
+        }else {
+            return false
+        }
+    }
+
+    //终止排序算法
+    function antisort(){
+        clearTimeout(movement);
+        changecolor();
+        btnsetting_whensortisdone();
+    }
+
+    //末尾删去值
+    function lastdelete(){
+        numData.pop();
+        DIVS[(DIVS.length-1)].style.height="0px";
+        DIVS[(DIVS.length-1)].style.backgroundColor="#979797";
+        setTimeout(function(){
+            chart.removeChild(DIVS[(DIVS.length-1)]);
+        },300)
+    }
+
+    //队首删去值
+    function firstdelete(){
+        numData.shift();
+        DIVS[0].style.height="0px";
+        DIVS[0].style.backgroundColor="#979797";
+        setTimeout(function(){
+            chart.removeChild(DIVS[0]);
+        },300)
+    }
+
+    //末尾添加值
+    function lastadd(){
+
+        console.log(INPUT.value)
+        var temp = parseInt(INPUT.value)
+
+        console.log(temp)
+        if((temp)&&(temp>10)&&(temp<100)){
+            numData.push(temp)
+            addDiv(temp*5)
+        }else{
+            alert("请输入10~100以内整数")
+        }
+
+
+        // numData.pop();
+        // DIVS[(DIVS.length-1)].style.height="0px";
+        // DIVS[(DIVS.length-1)].style.backgroundColor="#979797";
+        // setTimeout(function(){
+        //     chart.removeChild(DIVS[(DIVS.length-1)]);
+        // },300)
+
+    }
+
+    //队首添加值
+    function firstadd(){
+        console.log(INPUT.value)
+        var temp = parseInt(INPUT.value)
+        console.log(temp)
+        if((temp)&&(temp>10)&&(temp<100)){
+
+            numData.splice(0,0,temp)
+            var singleDiv = document.createElement("div");
+            singleDiv.setAttribute("class","singlediv");
+            singleDiv.style.height="1px";
+            var divlist = chart.getElementsByTagName("div");
+            if(divlist.length==0){
+                chart.appendChild(singleDiv);
+            }else{
+                chart.insertBefore(singleDiv,divlist[0])
+            }
+
+            setTimeout(function(){singleDiv.style.height=(temp*5)+"px";},100);
+        }else{
+            alert("请输入10~100以内整数")
+        }
+        // numData.shift();
+        // DIVS[0].style.height="0px";
+        // DIVS[0].style.backgroundColor="#979797";
+        // setTimeout(function(){
+        //     chart.removeChild(DIVS[0]);
+        // },300)
+    }
+
+
+    //按钮添加监听
+
+    EventUtil.addHandler(BTN_createradom,"click",randomCreate);
+    EventUtil.addHandler(BTN_sort,"click",sort);
+    EventUtil.addHandler(BTN_rightout,"click",lastdelete);
+    EventUtil.addHandler(BTN_leftout,"click",firstdelete);
+    EventUtil.addHandler(BTN_rightin,"click",lastadd);
+    EventUtil.addHandler(BTN_leftin,"click",firstadd);
+    createDate()
+</script>
+</body>
+</html>

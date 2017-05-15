@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="lib/vue.js"></script>
+    <style>
+        .arrow-up {
+            width:0;
+            height:0;
+            border-left:15px solid transparent;
+            border-right:15px solid transparent;
+            border-bottom:15px solid #565656;
+        }
+
+        /*箭头向下*/
+        .arrow-down {
+            width:0;
+            height:0;
+            border-left:15px solid transparent;
+            border-right:15px solid transparent;
+            border-top:15px solid #565656;
+        }
+
+        /*箭头向左*/
+        .arrow-left {
+            width:0;
+            height:0;
+            border-top:30px solid transparent;
+            border-bottom:30px solid transparent;
+            border-right:30px solid yellow;
+        }
+
+        /*箭头向右*/
+        .arrow-right {
+            width:0;
+            height:0;
+            border-top:50px solid transparent;
+            border-bottom: 50px solid transparent;
+            border-left: 50px solid green;
+        }
+        table{
+            display: inline-block;left: 50%;top: 40%;transform: translate(-50%,-40%);position: relative;text-align: center;
+            background-color: #f6f6f6;
+            box-shadow:  rgb(183, 183, 183) 0px 20px 30px -10px; 
+        }
+        th,td{
+            width: 200px
+        }
+        td{
+            height: 40px
+        }
+        th{
+            height: 60px;font-size: 24px
+        }
+        tbody,thead{
+            width: 100%
+        }
+        .main{
+            position: fixed;width: 100%;height: 100%
+        }
+        .arrowlist{
+            display: inline-block;width: 20px;vertical-align:middle;margin: 0 10px 2px 10px;
+        }
+        .arrow-up,.arrow-down{
+            margin: 7px 0 7px 0;cursor:pointer;
+        }
+        .b{
+            padding-bottom: 5px;display:inline-block;
+        }
+    </style>
+</head>
+<body>
+<!-- <div class="arrow-up">
+</div>
+<div class="arrow-down">
+</div>
+<div class="arrow-left">
+</div>
+<div class="arrow-right">
+</div> -->
+<div class="main">
+    <table id="table" border="1">
+    <thead>
+    <tr>
+        <th><b class="b">名称</b></th>
+        <th><b class="b">变速箱</b></th>
+        <th ><b>排量</b><div class="arrowlist"><div v-on:click="sortup('displacement')" class="arrow-up"></div><div v-on:click="sortdown('displacement')" class="arrow-down"></div></div></th>
+        <th ><b>马力</b><div class="arrowlist"><div v-on:click="sortup('power')" class="arrow-up"></div><div v-on:click="sortdown('power')" class="arrow-down"></div></div></th>
+        <th ><b>价格</b><div class="arrowlist"><div v-on:click="sortup('price')" class="arrow-up"></div><div v-on:click="sortdown('price')" class="arrow-down"></div></div></th>
+    </tr>
+    </thead>
+
+    <tbody>
+    <tr v-for = "(car,index) in cardata">
+        <td>{{car.name}}</td>
+        <td>{{car.gearbox}}</td>
+        <td>{{car.displacement}}</td>
+        <td>{{car.power}}</td>
+        <td>{{car.price}}</td>
+    </tr>
+    </tbody>
+</table>
+</div>
+
+<script>
+    var newdata = [
+        {
+            name : "大众高尔夫R-line",
+            gearbox:"手动MT",
+            displacement:"1.4t",
+            power:"150ps",
+            price:"￥157900"
+
+        },
+        {
+            name : "本田思域",
+            gearbox:"无极变速CVT",
+            displacement:"1.5t",
+            power:"176ps",
+            price:"￥139900"
+
+        },
+        {
+            name : "福特福克斯",
+            gearbox:"手自一体AT",
+            displacement:"1.5t",
+            power:"180ps",
+            price:"￥149800"
+
+        },
+        {
+            name : "别克英朗",
+            gearbox:"双离合",
+            displacement:"1.4t",
+            power:"144ps",
+            price:"￥140900"
+
+        },
+        {
+            name : "奥迪A3",
+            gearbox:"双离合",
+            displacement:"1.8t",
+            power:"180ps",
+            price:"￥215800"
+
+        },
+        {
+            name : "标致308S",
+            gearbox:"双离合",
+            displacement:"1.6t",
+            power:"167ps",
+            price:"￥138700"
+
+        },
+        {
+            name : "Veloster飞思",
+            gearbox:"手动",
+            displacement:"1.6t",
+            power:"204ps",
+            price:"￥172800"
+
+        }
+    ];
+
+    var data = new Vue({
+        el: '#table',
+        data: {
+           cardata: newdata
+        },
+        methods:{
+            sortdown: function (name) {
+                var newcardata = [];
+                for (var m =0 ;newdata.length != 0 ; m++){
+                    for(var i = 0,a = 0; i <newdata.length;i++ ){
+                        if(parseFloat(newdata[a][name].replace(/[^0-9]+/g, '')) < parseFloat(newdata[i][name].replace(/[^0-9]+/g, '')) ){
+                        a = i;
+                        }
+                    }
+                    newcardata[m] =newdata.splice(a,1)[0];
+                }
+                newdata = newcardata;
+                data.$data.cardata = newdata;
+            },
+            sortup: function (name) {
+                var newcardata = [];
+                for (var m =0 ;newdata.length != 0 ; m++){
+                    for(var i = 0,a = 0; i <newdata.length;i++ ){
+                        if(parseFloat(newdata[a][name].replace(/[^0-9]+/g, '')) > parseFloat(newdata[i][name].replace(/[^0-9]+/g, '')) ){
+                            a = i;
+                        }
+                    }
+                    newcardata[m] =newdata.splice(a,1)[0];
+                }
+                newdata = newcardata;
+                data.$data.cardata = newdata;
+            }
+        }
+    })
+</script>
+</body>
+</html>

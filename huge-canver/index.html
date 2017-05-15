@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Document</title>
+	<style type="text/css">
+		body{
+			background-color: #f3f3f3;width: 100%; height: 100%;padding-top: 50px;
+		}
+		.main{
+			display: inline-block;left: 50%;top:50%;transform: translate(-50%,0);position: relative;
+		}
+		.window{
+			width: 1024px;height: 576px;background-color: #f3f3f3;overflow: hidden;position: relative;
+		}
+		#thiscanvas{
+			position: relative;top: -540px;left: -960px;
+		}
+		#previewwindow{
+			background-color: rgba(255,255,255,0.2);outline: solid thin #565656;position: absolute; width: 256px;height: 144px;z-index: 999;
+		}
+		#preview{
+			position: relative;left: 50%;transform: translate(-50%,20px);display: inline-block;;box-shadow: 0 10px 30px 0 #565656;
+		}
+		.shadow{
+			pointer-events: none; background-color: rgba(1,1,1,0.1);width: 100%;height:100%;position: absolute;z-index: 999;box-shadow: 0 10px 30px 0 #565656 inset;
+		}
+	</style>
+</head>
+<body>
+	<div class="main">
+		<div class="window" id="window">
+		<div class="shadow"></div>
+			<canvas style = "position :relative;top: 0px;left: 0px;" id="thiscanvas" height="10800" width ="19200"></canvas>
+		</div>
+		<div id="preview">
+			<div style = "position :absolute;top: 0px;left: 0px;" id = "previewwindow" ></div>
+			<canvas id="previewCanvas" height="270" width ="480"></canvas>
+		</div>
+	</div>
+	<script type="text/javascript">  
+  		var previewWindow = document.getElementById("previewwindow")
+
+  		//给 canvas 添加图片
+		var canvasSreen = document.getElementById("thiscanvas")
+		var previewCanvas = document.getElementById("previewCanvas")
+		var cxt=canvasSreen.getContext("2d")
+		var pxt=previewCanvas.getContext("2d")
+		var img=new Image()  
+		img.src="./pic/1.png"
+		img.onload = function () //确保图片已经加载完毕  
+		{  
+		    cxt.drawImage(img,0,0,1920,1080);  
+		    pxt.drawImage(img,0,0,516,288);
+		}  
+  		
+
+  		var thiswindow = document.getElementById("window")
+
+  		canvasSreen.onmousedown = function(event){
+  			
+  			var cursorBeginX = event.clientX
+  			var cursorBeginY = event.clientY
+  			var canvasbeginX = parseInt(canvasSreen.style.left)
+  			var canvasbeginY = parseInt(canvasSreen.style.top)
+  			console.log(cursorBeginX+","+cursorBeginY+","+canvasSreen.style.left+","+canvasSreen.style.top+",")
+  			document.onmousemove = function(ev){
+  				
+  				var cursorNowX = ev.clientX
+  				var cursorNowY = ev.clientY
+
+  				var moveX = cursorNowX - cursorBeginX
+  				var moveY = cursorNowY - cursorBeginY
+
+
+  				var endX = canvasbeginX + moveX
+  				var endY = canvasbeginY + moveY
+
+  				//设定x坐标
+  				if(endX <= 0 && endX >= (-896)){
+
+  					canvasSreen.style.left = endX + "px"
+  					previewWindow.style.left = endX/(-4)+"px"
+  				}else if(endX > 0){
+  					canvasSreen.style.left = 0 + "px"
+  					previewWindow.style.left = 0/(-4)+"px"
+  				}else{
+  					canvasSreen.style.left = (-896) + "px"
+  					previewWindow.style.left = (-896)/(-4)+"px"
+  				}
+
+  				//设定y坐标
+  				if( endY <= 0 && endY >= (-504)){
+
+  					canvasSreen.style.top = endY  + "px"
+  					previewWindow.style.top = endY/(-4)+"px"
+  				}else if(endY > 0){
+  					canvasSreen.style.top = 0  + "px"
+  					previewWindow.style.top = 0/(-4)+"px"
+  				}else {
+  					canvasSreen.style.top = (-504) + "px"
+  					previewWindow.style.top = (-504)/(-4)+"px"
+  				}
+
+  				document.onmouseup = function(){
+  					document.onmouseup = null
+  					document.onmousemove = null
+  				}
+  			}
+
+  		}
+
+  		previewWindow.onmousedown = function(event){
+  			
+  			var cursorBeginX = event.clientX
+  			var cursorBeginY = event.clientY
+  			var canvasbeginX = parseFloat(previewWindow.style.left)
+  			var canvasbeginY = parseFloat(previewWindow.style.top)
+  			
+  			document.onmousemove = function(ev){
+  				
+  				var cursorNowX = ev.clientX
+  				var cursorNowY = ev.clientY
+
+  				var moveX = cursorNowX - cursorBeginX
+  				var moveY = cursorNowY - cursorBeginY
+
+
+  				var endX = canvasbeginX + moveX
+  				var endY = canvasbeginY + moveY
+
+  				console.log(endX +","+endY+","+moveX+","+moveY)
+  				if(endX >= 0 && endX <= (224)){
+
+  					canvasSreen.style.left = endX *(-4)+ "px"
+  					previewWindow.style.left = endX+"px"
+  				}else if(endX < 0){
+  					canvasSreen.style.left = 0 *(-4)+ "px"
+  					previewWindow.style.left = 0+"px"
+  				}else{
+  					canvasSreen.style.left = 224 *(-4)+ "px"
+  					previewWindow.style.left = 224+"px"
+  				}
+
+
+
+
+
+
+  				if( endY >= 0 && endY <= (126)){
+
+  					canvasSreen.style.top = endY *(-4)  + "px"
+  					previewWindow.style.top = endY+"px"
+  				}else if(endY < 0){
+  					canvasSreen.style.top = 0 *(-4)  + "px"
+  					previewWindow.style.top = 0+"px"
+  				}else{
+  					canvasSreen.style.top = 126*(-4)  + "px"
+  					previewWindow.style.top = 126+"px"
+  				}
+
+  				document.onmouseup = function(){
+  					document.onmouseup = null
+  					document.onmousemove = null
+  				}
+  			}
+
+  		}
+
+</script>
+</body>
+</html>
